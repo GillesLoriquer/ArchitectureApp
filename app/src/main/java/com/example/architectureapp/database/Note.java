@@ -1,4 +1,4 @@
-package com.example.architectureapp;
+package com.example.architectureapp.database;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
