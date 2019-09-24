@@ -10,7 +10,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-public class AddNoteActivity extends AppCompatActivity {
+public class AddEditNoteActivity extends AppCompatActivity {
+    public static final String EXTRA_ID = "com.example.architectureapp.EXTRA_ID";
     public static final String EXTRA_TITLE = "com.example.architectureapp.EXTRA_TITLE";
     public static final String EXTRA_DESCRIPTION = "com.example.architectureapp.EXTRA_DESCRIPTION";
     public static final String EXTRA_PRIORITY = "com.example.architectureapp.EXTRA_PRIORITY";
@@ -24,9 +25,6 @@ public class AddNoteActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_note);
 
-        // Set le titre dans l'action bar
-        setTitle("Save note");
-
         // Affiche le bouton back dans l'action bar
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_close);
 
@@ -35,6 +33,19 @@ public class AddNoteActivity extends AppCompatActivity {
         numberPickerPriority = findViewById(R.id.number_picker_priority);
         numberPickerPriority.setMinValue(1);
         numberPickerPriority.setMaxValue(10);
+
+        Intent intent = getIntent();
+        if (intent.hasExtra(AddEditNoteActivity.EXTRA_ID)) {
+            // Set le titre dans l'action bar
+            setTitle("Edit note");
+
+            editTextTitle.setText(intent.getStringExtra(AddEditNoteActivity.EXTRA_TITLE));
+            editTextDescription.setText(intent.getStringExtra(AddEditNoteActivity.EXTRA_DESCRIPTION));
+            numberPickerPriority.setValue(intent.getIntExtra(AddEditNoteActivity.EXTRA_PRIORITY, -1));
+        } else {
+            // Set le titre dans l'action bar
+            setTitle("Save note");
+        }
     }
 
     @Override
@@ -66,6 +77,9 @@ public class AddNoteActivity extends AppCompatActivity {
         intent.putExtra(EXTRA_TITLE, title);
         intent.putExtra(EXTRA_DESCRIPTION, description);
         intent.putExtra(EXTRA_PRIORITY, priority);
+
+        int id = getIntent().getIntExtra(AddEditNoteActivity.EXTRA_ID, -1);
+        if (id != -1) intent.putExtra(EXTRA_ID, id);
 
         setResult(RESULT_OK, intent);
         finish();

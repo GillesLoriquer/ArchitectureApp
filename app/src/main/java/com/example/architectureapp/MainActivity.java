@@ -27,6 +27,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private static final int ADD_NOTE_REQUEST_CODE = 1;
+    private static final int EDIT_NOTE_REQUEST_CODE = 2;
 
     private ActivityMainBinding binding;
     private NoteViewModel mNoteViewModel;
@@ -54,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
         binding.buttonAddNote.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, AddNoteActivity.class);
+                Intent intent = new Intent(MainActivity.this, AddEditNoteActivity.class);
                 startActivityForResult(intent, ADD_NOTE_REQUEST_CODE);
             }
         });
@@ -83,6 +84,20 @@ public class MainActivity extends AppCompatActivity {
                 Snackbar.make(binding.getRoot(), "Note deleted", Snackbar.LENGTH_SHORT).show();
             }
         }).attachToRecyclerView(recyclerView);
+
+        // RECYCLERVIEW ITEM CLICK
+        adapter.setOnItemClickListener(new NoteAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(Note note) {
+                Intent intent = new Intent(MainActivity.this, AddEditNoteActivity.class);
+                intent.putExtra(AddEditNoteActivity.EXTRA_ID, note.getId());
+                intent.putExtra(AddEditNoteActivity.EXTRA_TITLE, note.getTitle());
+                intent.putExtra(AddEditNoteActivity.EXTRA_DESCRIPTION, note.getDescription());
+                intent.putExtra(AddEditNoteActivity.EXTRA_PRIORITY, note.getPriority());
+
+                startActivityForResult(intent, EDIT_NOTE_REQUEST_CODE);
+            }
+        });
     }
 
     @Override
@@ -92,12 +107,27 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == ADD_NOTE_REQUEST_CODE && resultCode == RESULT_OK) {
             Bundle bundle = data.getExtras();
             Note note = new Note(
-                    bundle.getString(AddNoteActivity.EXTRA_TITLE),
-                    bundle.getString(AddNoteActivity.EXTRA_DESCRIPTION),
-                    bundle.getInt(AddNoteActivity.EXTRA_PRIORITY)
+                    bundle.getString(AddEditNoteActivity.EXTRA_TITLE),
+                    bundle.getString(AddEditNoteActivity.EXTRA_DESCRIPTION),
+                    bundle.getInt(AddEditNoteActivity.EXTRA_PRIORITY)
             );
             mNoteViewModel.insert(note);
             Snackbar.make(binding.getRoot(), "Note saved", Snackbar.LENGTH_SHORT).show();
+        } else if (requestCode == EDIT_NOTE_REQUEST_CODE && resultCode == RESULT_OK) {
+            Bundle bundle = data.getExtras();
+            int id = bundle.getInt(AddEditNoteActivity.EXTRA_ID);
+            if (id == -1) {
+                Snackbar.make(binding.getRoot(), "Note can't be updated", Snackbar.LENGTH_SHORT).show();
+                return;
+            }
+            Note note = new Note(
+                    bundle.getString(AddEditNoteActivity.EXTRA_TITLE),
+                    bundle.getString(AddEditNoteActivity.EXTRA_DESCRIPTION),
+                    bundle.getInt(AddEditNoteActivity.EXTRA_PRIORITY)
+            );
+            note.setId(bundle.getInt(AddEditNoteActivity.EXTRA_ID));
+            mNoteViewModel.update(note);
+            Snackbar.make(binding.getRoot(), "Note has been updated", Snackbar.LENGTH_SHORT).show();
         } else {
             Snackbar.make(binding.getRoot(), "Note has not been saved", Snackbar.LENGTH_SHORT).show();
         }
